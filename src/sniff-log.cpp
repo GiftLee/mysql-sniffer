@@ -181,7 +181,7 @@ void log_session_query(mysql_session* sess){
     char execute_tm[32];
     query_info_t* info = sess->query_info; 
     format_timeval(&info->query_end, start_tm, 32);
-    format_relative_time(&info->query_end, &info->result_start, execute_tm, 32);
+    format_relative_time(&info->query_end, &info->result_start, execute_tm, 64);
     const char* dbname = strlen(sess->dbname) > 0 ? sess->dbname : "NULL";
     const char* username = sess->user_info ? sess->user_info->username : "NULL";
 
@@ -190,14 +190,15 @@ void log_session_query(mysql_session* sess){
     if(info->count <= truncate_len){
         /* may cause the origin query broken due to charset */
         remove_newline(info->data);
-        fprintf(outstream, "%s\t %s\t %s\t %s\t %s\t %10d\t %s\n", 
+        fprintf(outstream, "%s\t %s\t %s\t %s\t %s\t %10d\t %s\t result %s\n", 
                 start_tm, 
                 username,
                 inet_ntoa(*(struct in_addr*)&sess->skey.saddr),
                 dbname,
                 execute_tm,
                 info->row_num,
-                info->data);
+                info->data,
+                sess->response_info);
     }else if(truncate >= 0){
         info->data[truncate_len] = '\0';
         /* may cause the origin query broken due to charset */

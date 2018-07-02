@@ -46,11 +46,19 @@ int query_res_find_eof(mysql_session* sess, half_stream* stream, char* start_pos
         }
         //log_runtime_error("handled: %d pkt-len: %d, pkt-num: %d\n", stream->count-stream->offset-unhandled, PACKET_LEN(cur_header), PACKET_NUM(cur_header));
         first_byte = *(cur_header + MYSQL_PACKET_HEADER_LEN);
-        unhandled -= MYSQL_PACKET_HEADER_LEN + PACKET_LEN(cur_header);
+        int pkt_len = PACKET_LEN(cur_header);
+        unhandled -= (MYSQL_PACKET_HEADER_LEN + PACKET_LEN(cur_header));
         cur_header += MYSQL_PACKET_HEADER_LEN + PACKET_LEN(cur_header);
         if(first_byte == MYSQL_EOF_MARKER){
-            find = 1;
-            break;
+            if (pkt_len == 7) {
+                sess->response_info = cur_header - 20;
+                find = 2;
+                break;
+            }
+            else {
+                find = 1;
+                break;
+            };
         }
         (*count)++;
     }
@@ -360,7 +368,7 @@ int mysql_dissect_query_result(mysql_session* sess, half_stream* stream){
      * and the second one means that all rows have been sent.
      */
     int first_eof = query_res_find_eof(sess, stream, stream->data, &sess->query_info->col_num); 
-    if(first_eof){
+    if(first_eof == 1){
         log_runtime_error("Entering Server Result Phase2 from QueryResult state...");
         int second_eof = query_res_find_eof(sess, stream, stream->data + sess->handled_len,&sess->query_info->row_num);
         /* if we have not handled all data, we should return STREAM_DISCARD, and set handled_len
@@ -376,6 +384,12 @@ int mysql_dissect_query_result(mysql_session* sess, half_stream* stream){
             info->result_end = info->result_start;
             ret = 0;
         }
+    }
+    else if (first_eof == 2) {
+        sess->state = SESSION_STATE_QUERY;
+        sess->handled_len = 0;
+        info->result_end = info->result_start;
+        ret = 0;
     }else{
         /* the state will not change, but we may haven't handled all data
          * so we should use nids_discard() to notify that we have data left in stream->data.

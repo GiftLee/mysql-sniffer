@@ -63,6 +63,8 @@ mysql_session* mysql_session_new(){
     new_session->dbname = (char*)malloc(MYSQL_DB_NAME_LEN);
     new_session->dbname[0] = '\0';
 
+    new_session->response_info = (char*)malloc(128);
+    new_session->response_info[0] = '\0';
     //DEBUG_PRINT("new mysql session %p\n", new_session);
     return new_session;
 }

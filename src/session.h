@@ -82,6 +82,7 @@ typedef struct{
     int handled_len;   //the data len we have handled in a notification, valid when STREAM_DISCARD is returned
     log_file_t* log;
     char* dbname;
+    char* response_info;
 }mysql_session;
 
 #ifdef __cplusplus
