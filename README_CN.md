@@ -12,9 +12,14 @@ MySQL Sniffer 是一个基于 MySQL 协议的抓包工具，实时抓取 MySQLSe
 ### 依赖
 glib2-devel(2.28.8)、libpcap-devel(1.4.0)、libnet-devel(1.1.6)
 
+```
+# CentOS Linux release 7.4.1708 (Core)  
+yum install -y cmake  gcc-c++  libnet-devel libpcap-devel glib2-devel    
+```
+
 ### 安装
 ```
-git clone https://github.com/Qihoo360/mysql-sniffer
+git clone git@github.com:hhyo/mysql-sniffer.git
 cd mysql-sniffer
 mkdir proj
 cd proj
