@@ -27,6 +27,6 @@ int format_timeval(struct timeval *tv, char *buf, int sz) {
 int format_relative_time(struct timeval* early, struct timeval* later, char* buf, int size){
     int second = later->tv_sec > early->tv_sec ? later->tv_sec - early->tv_sec: 0;
     int msecond = later->tv_usec - early->tv_usec;
-    return snprintf(buf, size, "%10dms", second * 1000 + msecond/1000);
+    return snprintf(buf, size, "%10dus", second * 1000000 + msecond);
 }
 
